@@ -1,0 +1,16 @@
+Anais:
+	Test Unitaires avec cppUnit
+	_traduction du code lobo en cpp 
+Gaetan:
+	parsage du fichier texte en entrée 
+	_traduction du code lobo en cpp 
+Matty:
+	scripts d'installation,clean,commit
+	detection des fuites memoires
+	_traduction du code lobo en cpp 
+	
+	
+Mise en page du rapport a pourvoir...
+
+1ere version stable à envoyer à RICHER le 05 Novembre 2012.
+Le rapport est à ecrire au fur et à mesure.
