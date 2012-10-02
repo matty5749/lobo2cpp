@@ -1,0 +1,5 @@
+build/*
+.kdev4/*
+lobo2cpp.kdev4
+doxygen/html/*
+*.*~
