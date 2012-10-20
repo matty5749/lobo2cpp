@@ -1,0 +1,28 @@
+# fichier cube.lobo
+# fonction sans argument
+FONCTION nouvelle_ligne
+PARAMETRES
+DEBUT
+AFFICHE "\n" ;
+RETOUR 0 ;
+FIN_FONCTION
+# fonction avec un argument, affiche le cube
+FONCTION affiche_cube 
+PARAMETRES n
+DEBUT
+DECLARE c ;
+AFFECTE c * n * n n ;
+AFFICHE n ;
+AFFICHE " au cube = " ;
+AFFICHE c ;
+APPEL nouvelle_ligne ;
+RETOUR 0 ;
+FIN_FONCTION
+DECLARE i ;
+AFFECTE i 1 ;
+REPETE 10
+DEBUT
+APPEL affiche_cube i ;
+AFFECTE i + i 1 ;
+FIN_REPETE
+
