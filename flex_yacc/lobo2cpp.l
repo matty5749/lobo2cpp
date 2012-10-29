@@ -19,18 +19,19 @@ PARAMETRES {printf ("PARAMETRES");return PARAMETRES;}
 DEBUT {printf ("DEBUT");return DEBUT;}
 RETOUR {printf ("RETOUR");return RETOUR;}
 FIN_FONCTION {printf ("FIN_FONCTION");return FIN_FONCTION;}
-; {printf (";");return POINT_VIRGULE;}
+
 APPEL {printf ("APPEL");return APPEL;}
-NOMBRE {printf ("NOMBRE");return NOMBRE;}
 FIN_REPETE {printf ("FIN_REPETE");return FIN_REPETE;}
 DECLARE {printf ("DECLARE");return DECLARE;}
 AFFECTE {printf ("AFFECTE");return AFFECTE;}
 AFFICHE {printf ("AFFICHE");return AFFICHE;}
 REPETE {printf ("REPETE");return REPETE;}
-{CHAINE} {printf("%s",yytext);return CHAINE;}
-{OPERATEUR_BINAIRE} {printf("%s",yytext);return OPERATEUR_BINAIRE;}
-{NOMBRE} {printf("%s",yytext);return NOMBRE;}
-{IDENTIFIANT} {printf("%s",yytext);return IDENTIFIANT;}
+
+{CHAINE} {printf("%s",yytext);asprintf(&yylval,"%s",yytext);return CHAINE;}
+{OPERATEUR_BINAIRE} {printf("%s",yytext);asprintf(&yylval,"%s",yytext);return OPERATEUR_BINAIRE;}
+{IDENTIFIANT} {printf("%s",yytext);asprintf(&yylval,"%s",yytext);return IDENTIFIANT;}
+{NOMBRE} {printf("%s",yytext);asprintf(&yylval,"%s",yytext);return NOMBRE;}
+; {printf (";");return POINT_VIRGULE;}
 
 	/*Les expressions ci dessous n'envoie pas d'information à yacc*/
 [ \t] {printf("%s",yytext);};
