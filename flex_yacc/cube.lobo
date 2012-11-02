@@ -10,7 +10,7 @@ FIN_FONCTION
 
 # fonction avec un argument, affiche le cube
 FONCTION affiche_cube 
-PARAMETRES n o p
+PARAMETRES n
 DEBUT
 DECLARE c ;
 AFFECTE c * n * n n ;

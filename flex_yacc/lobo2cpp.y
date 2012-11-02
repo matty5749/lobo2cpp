@@ -24,9 +24,9 @@ program :
 		if (fichier)
 		{
 			fprintf(fichier,"#include <stdio.h>\n#include <math.h>\n#include <iostream>\nusing namespace std;\n\n");
-			fprintf(fichier,(const char*)$1);
+			fprintf(fichier,"%s",$1);
 			fprintf(fichier,"int main(int argc,char** argv)\n{\n");
-			fprintf(fichier,(const char*)$2);
+			fprintf(fichier,"%s",$2);
 			fprintf(fichier,"return 0;\n}");
 		}
 	}
@@ -49,17 +49,20 @@ instructions :
 	;
 	
 definition_fonction:
-	FONCTION IDENTIFIANT PARAMETRES identifiants DEBUT ensInstructions RETOUR expression POINT_VIRGULE FIN_FONCTION
+	FONCTION IDENTIFIANT PARAMETRES ensIdentifiants DEBUT ensInstructions RETOUR expression POINT_VIRGULE FIN_FONCTION
 	{
 	asprintf(&$$,"int %s(%s)\n{\n%sreturn %s;\n}\n\n",$2,$4,$6,$8);
 	}
 	;
 
-identifiants:
+ensIdentifiants:
 	/*vide*/ {asprintf(&$$,"");}
-	|IDENTIFIANT  {asprintf(&$$,"int %s",$1);}
+	| identifiants {asprintf(&$$,"%s",$1);}
+	;
+
+identifiants:
+	IDENTIFIANT  {asprintf(&$$,"int %s",$1);}
 	|identifiants IDENTIFIANT  {asprintf(&$$,"%s,int %s",$1,$2);}
-	
 	;
 	
 appel_fonction :
@@ -84,7 +87,7 @@ instruction_simple :
 	;
 	
 declare_variable:
-	DECLARE IDENTIFIANT {asprintf(&$$,"int %s ;\n",$1);}
+	DECLARE IDENTIFIANT {asprintf(&$$,"int %s ;\n",$2);}
 	;
 	
 affecte_variable:
