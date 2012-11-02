@@ -26,6 +26,10 @@ AFFECTE i 1 ;
 REPETE 10
 DEBUT
 APPEL affiche_cube i ;
+REPETE 3
+DEBUT
+AFFICHE "testRepeteDansRepete";
+FIN_REPETE
 AFFECTE i + i 1 ;
 FIN_REPETE
 

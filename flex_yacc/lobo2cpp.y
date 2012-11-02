@@ -1,11 +1,23 @@
 %{
 #include "stdio.h"
+#include "tableSymbole.h"
+
+int erreur=0;
+int repete=0;
 
 int yylex(void);
 int yytext(void);
 extern int yyin;
+extern int yylineno;
 
-#define YYSTYPE char*
+struct token
+{
+char* cpp;
+int arite;
+};
+typedef struct token token;
+
+#define YYSTYPE token
 #define YYERROR_VERBOSE 1
 %}
 
@@ -19,97 +31,157 @@ extern int yyin;
 program :
 	ensDefinitionFonction ensInstructions 
 	{
-		printf("\nLe code source lobo est syntaxiquement correct!\nLa traduction du code source se trouve dans le fichier traduction.cpp\n");
-		FILE* fichier=fopen("traduction.cpp","w");
-		if (fichier)
+		int erreurTS=lectureTableDeSymbole();
+		if (erreurTS || erreur)
 		{
-			fprintf(fichier,"#include <stdio.h>\n#include <math.h>\n#include <iostream>\nusing namespace std;\n\n");
-			fprintf(fichier,"%s",$1);
-			fprintf(fichier,"int main(int argc,char** argv)\n{\n");
-			fprintf(fichier,"%s",$2);
-			fprintf(fichier,"return 0;\n}");
+			fprintf(stderr,"Il y a : %d erreur\n", erreurTS+erreur);
+		}
+		else
+		{
+			printf("\nLe code source lobo est syntaxiquement correct!\nLa traduction du code source se trouve dans le fichier traduction.cpp\n");
+			FILE* fichier=fopen("traduction.cpp","w");
+			if (fichier)
+			{
+				fprintf(fichier,"#include <stdio.h>\n#include <math.h>\n#include <iostream>\nusing namespace std;\n\n");
+				fprintf(fichier,"%s",$1.cpp);
+				fprintf(fichier,"int main(int argc,char** argv)\n{\n");
+				fprintf(fichier,"%s",$2.cpp);
+				fprintf(fichier,"return 0;\n}");
+			}
 		}
 	}
 	;
 
 ensDefinitionFonction:
-	/*vide*/ {asprintf(&$$,"");}
-	|ensDefinitionFonction definition_fonction {asprintf(&$$,"%s%s",$1,$2);}
+	/*vide*/ {asprintf(&$$.cpp,"");}
+	|ensDefinitionFonction definition_fonction {asprintf(&$$.cpp,"%s%s",$1.cpp,$2.cpp);}
 	;
 		
 ensInstructions:
-	instructions {asprintf(&$$,"%s",$1);}
-	|ensInstructions instructions {asprintf(&$$,"%s%s",$1,$2);}
+	instructions {asprintf(&$$.cpp,"%s",$1.cpp);}
+	|ensInstructions instructions {asprintf(&$$.cpp,"%s%s",$1.cpp,$2.cpp);}
 	;
 	
 instructions :
-	appel_fonction POINT_VIRGULE {asprintf(&$$,"%s",$1);}
-	|repete {asprintf(&$$,"%s",$1);}
-	|instruction_simple POINT_VIRGULE {asprintf(&$$,"%s",$1);}
+	appel_fonction POINT_VIRGULE {asprintf(&$$.cpp,"%s",$1.cpp);}
+	|repete {asprintf(&$$.cpp,"%s",$1.cpp);}
+	|instruction_simple POINT_VIRGULE {asprintf(&$$.cpp,"%s",$1.cpp);}
 	;
 	
 definition_fonction:
 	FONCTION IDENTIFIANT PARAMETRES ensIdentifiants DEBUT ensInstructions RETOUR expression POINT_VIRGULE FIN_FONCTION
 	{
-	asprintf(&$$,"int %s(%s)\n{\n%sreturn %s;\n}\n\n",$2,$4,$6,$8);
+		asprintf(&$$.cpp,"int %s(%s)\n{\n%sreturn %s;\n}\n\n",$2.cpp,$4.cpp,$6.cpp,$8.cpp);
+		insererSymbole($2.cpp,yylineno)->arite=$4.arite;
 	}
 	;
 
 ensIdentifiants:
-	/*vide*/ {asprintf(&$$,"");}
-	| identifiants {asprintf(&$$,"%s",$1);}
+	/*vide*/ {asprintf(&$$.cpp,"");$$.arite=0;}
+	| identifiants {asprintf(&$$.cpp,"%s",$1.cpp);}
 	;
 
 identifiants:
-	IDENTIFIANT  {asprintf(&$$,"int %s",$1);}
-	|identifiants IDENTIFIANT  {asprintf(&$$,"%s,int %s",$1,$2);}
+	IDENTIFIANT  
+	{
+		insererSymbole($1.cpp,yylineno);
+		asprintf(&$$.cpp,"int %s",$1.cpp);
+		$$.arite++;
+	}
+	|identifiants IDENTIFIANT  
+	{
+		insererSymbole($2.cpp,yylineno);
+		asprintf(&$$.cpp,"%s,int %s",$1.cpp,$2.cpp);
+		$$.arite++;
+	}
 	;
 	
 appel_fonction :
 	APPEL IDENTIFIANT ensParametres
 	{
-	asprintf(&$$,"%s(%s);\n",$2,$3);
+		asprintf(&$$.cpp,"%s(%s);\n",$2.cpp,$3.cpp);
+		Symbole* symb=getSymbole($2.cpp);
+		if (symb) 
+		{	
+			symb->est_utilise=1;
+			if (symb->arite!=$3.arite) 
+			{
+				fprintf(stderr,"Erreur: Ligne %d: la fonction %s attend %d arguments.Hors vous en avez placé %d\n",yylineno,$2.cpp,symb->arite,$3.arite);
+				erreur++;
+			}
+		}
+		else 
+		{
+			fprintf(stderr,"Erreur: Ligne %d: la fonction %s n'a pas été déclaré\n",yylineno,$2.cpp);
+			erreur++;
+		}
 	}
 	;
 	
 repete :
 	REPETE NOMBRE DEBUT ensInstructions FIN_REPETE
 	{
-		asprintf(&$$,"int repete=1;\nwhile (repete<=%s)\n{\n%srepete++;\n}\n",$2,$4);
+		asprintf(&$$.cpp,"int repete%d=1;\nwhile (repete%d<=%s)\n{\n%srepete%d++;\n}\n",repete,repete,$2.cpp,$4.cpp,repete);
+		repete++;
 	}
 	;
 	
 instruction_simple :
-	declare_variable {asprintf(&$$,"%s",$1);}
-	|affecte_variable {asprintf(&$$,"%s",$1);}
-	|affiche_chaine {asprintf(&$$,"%s",$1);}
-	|affiche_variable {asprintf(&$$,"%s",$1);}
+	declare_variable {asprintf(&$$.cpp,"%s",$1.cpp);}
+	|affecte_variable {asprintf(&$$.cpp,"%s",$1.cpp);}
+	|affiche_chaine {asprintf(&$$.cpp,"%s",$1.cpp);}
+	|affiche_variable {asprintf(&$$.cpp,"%s",$1.cpp);}
 	;
 	
 declare_variable:
-	DECLARE IDENTIFIANT {asprintf(&$$,"int %s ;\n",$2);}
+	DECLARE IDENTIFIANT 
+	{
+		asprintf(&$$.cpp,"int %s ;\n",$2.cpp);
+		insererSymbole($2.cpp,yylineno);
+	}
+	
 	;
 	
 affecte_variable:
-	AFFECTE IDENTIFIANT expression {asprintf(&$$,"%s = %s ;\n",$2,$3);}
+	AFFECTE IDENTIFIANT expression 
+	{
+		asprintf(&$$.cpp,"%s = %s ;\n",$2.cpp,$3.cpp);
+		Symbole* symb=getSymbole($2.cpp);
+		if (symb) symb->est_utilise=1;
+		else
+		{
+			fprintf (stderr,"Erreur: Ligne %d : La variable %s n'a pas été déclaré.\n",yylineno,$2.cpp);
+			erreur++;
+		}
+	}
 	;
 	
 affiche_chaine:
-	AFFICHE CHAINE {asprintf(&$$,"cout<<%s<<endl;\n",$2);}
+	AFFICHE CHAINE {asprintf(&$$.cpp,"cout<<%s<<endl;\n",$2.cpp);}
 	;
 
 affiche_variable:
-	AFFICHE IDENTIFIANT {asprintf(&$$,"cout<<%s<<endl;\n",$2);}
+	AFFICHE IDENTIFIANT 
+	{
+		asprintf(&$$.cpp,"cout<<%s<<endl;\n",$2.cpp);
+		Symbole* symb=getSymbole($2.cpp);
+		if (symb) symb->est_utilise=1;
+		else
+		{
+			fprintf (stderr,"Erreur: Ligne %d : La variable %s n'a pas été déclaré.\n",yylineno,$2.cpp);
+			erreur++;
+		}
+	}
 	;
 	
 expression:
-	parametre {asprintf(&$$,"%s",$1);}
-	|OPERATEUR_BINAIRE expression expression {asprintf(&$$,"%s%s%s",$2,$1,$3);}
+	parametre {asprintf(&$$.cpp,"%s",$1.cpp);}
+	|OPERATEUR_BINAIRE expression expression {asprintf(&$$.cpp,"%s%s%s",$2.cpp,$1.cpp,$3.cpp);}
 	;
 
 ensParametres:
-	/*vide*/ {asprintf(&$$,"");}
-	|ensParametres parametre {asprintf(&$$,"%s",$2);}
+	/*vide*/ {asprintf(&$$.cpp,"");}
+	|ensParametres parametre {asprintf(&$$.cpp,"%s",$2.cpp);$$.arite++;}
 	;
 	
 parametre:
@@ -120,15 +192,17 @@ parametre:
 %%
 
 //#include "lex.yy.c"//Fichier c generer par flex de lobo2cpp.l
+
 int main(int argc, char **argv) 
 {
+
 	if(argc == 2) 
 	{
 		FILE* fichier;
 		if(!(fichier=fopen(argv[1], "r"))) return 1;
 		
 		yyin=(int)fichier;
-		printf("\n%d\n",yyparse());
+		yyparse();
 		fclose(fichier);
 	}
 return 0;
@@ -137,6 +211,6 @@ return 0;
 int yyerror(char *s)
 {
 	char* chaine=(void *)yytext;
-	printf("%s sur : %s \n", s ,chaine);
+	fprintf(stderr,"%s sur : %s \n", s ,chaine);
 	return 0;
 }
