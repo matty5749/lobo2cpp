@@ -20,22 +20,6 @@ Symbole* insererSymbole (char* identifiant,int ligne)
 		ptr->suivant = tableSymbole;
 		tableSymbole = ptr;
 	} 
-	/*
-	else 
-	{
-		if(ptr->type != Symb_type) {
-			
-			char *msg;
-			asprintf(&msg, "Attention: la variable %s a deja ete definie a la ligne %d\n",
-				Symb_id, ptr->line);
-			asprintf(&msg, "%sAncien type : %s\nNouveau type : %s\n",
-				msg, getType(ptr->type), getType(Symb_type));
-			yyerror(msg);
-			ptr->type = Symb_type;
-			ptr->line = yylineno;
-		}
-	}
-	*/
 	return ptr;
 }
 
