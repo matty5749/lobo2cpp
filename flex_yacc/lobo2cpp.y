@@ -195,7 +195,6 @@ parametre:
 
 int main(int argc, char **argv) 
 {
-
 	if(argc == 2) 
 	{
 		FILE* fichier;
