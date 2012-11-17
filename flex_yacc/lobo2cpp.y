@@ -209,17 +209,6 @@ int main(int argc, char **argv)
 		fclose(fichier);
 	}
 
-	FILE *fichier;
-	char chaine[1000];
-	if( (fichier=fopen(name, "r")))
-	{
-		printf("salut\n");
-		 while (fgets(chaine, 1000, fichier) != NULL) // On lit le fichier tant qu'on ne reçoit pas d'erreur (NULL)
-        {
-            printf("%s", chaine); // On affiche la chaîne qu'on vient de lire
-        }
-	fclose(fichier);
-	}
 return 0;
 }
 
