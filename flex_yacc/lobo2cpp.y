@@ -1,6 +1,7 @@
 %{
 #include "stdio.h"
 #include "tableSymbole.h"
+#include "myRename.h"
 
 int erreur=0;
 int repete=0;
@@ -9,6 +10,7 @@ int yylex(void);
 int yytext(void);
 extern int yyin;
 extern int yylineno;
+extern char* name;
 
 struct token
 {
@@ -38,7 +40,7 @@ program :
 		}
 		else
 		{
-			printf("\nLe code source lobo est syntaxiquement correct!\nLa traduction du code source se trouve dans le fichier traduction.cpp\n");
+			printf("\nLe code source lobo est syntaxiquement correct!\n");
 			FILE* fichier=fopen("traduction.cpp","w");
 			if (fichier)
 			{
@@ -196,14 +198,27 @@ parametre:
 int main(int argc, char **argv) 
 {
 
-	if(argc == 2) 
+	if(argc >= 2)
 	{
 		FILE* fichier;
 		if(!(fichier=fopen(argv[1], "r"))) return 1;
-		
-		yyin=(int)fichier;
+			
+		yyin=(int)fichier;	
 		yyparse();
+		myRename(argc, argv);
 		fclose(fichier);
+	}
+
+	FILE *fichier;
+	char chaine[1000];
+	if( (fichier=fopen(name, "r")))
+	{
+		printf("salut\n");
+		 while (fgets(chaine, 1000, fichier) != NULL) // On lit le fichier tant qu'on ne reçoit pas d'erreur (NULL)
+        {
+            printf("%s", chaine); // On affiche la chaîne qu'on vient de lire
+        }
+	fclose(fichier);
 	}
 return 0;
 }
