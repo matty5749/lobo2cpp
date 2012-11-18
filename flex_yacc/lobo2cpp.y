@@ -50,6 +50,7 @@ program :
 				fprintf(fichier,"%s",$2.cpp);
 				fprintf(fichier,"return 0;\n}");
 			}
+			fclose(fichier);
 		}
 	}
 	;
@@ -207,6 +208,12 @@ int main(int argc, char **argv)
 		yyparse();
 		myRename(argc, argv);
 		fclose(fichier);
+
+		char *strTemp;
+		strTemp = (char*)malloc(sizeof(char)*(strlen(name)+strlen("indent ")+1));
+		strcpy(strTemp,"indent ");
+		strcat(strTemp, name);
+		system(strTemp);
 	}
 
 return 0;

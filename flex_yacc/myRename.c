@@ -10,7 +10,7 @@ int myRename(int paramargc, char** const paramargv)
 
 		if ( paramargc == 2)
 		{
-			name = (char*)malloc(sizeof(char)*strlen("traduction.cpp")+1);
+			name = (char*)malloc(sizeof(char)*(strlen("traduction.cpp")+1));
 			strcpy(name,"traduction.cpp");
 			printf("La traduction du code source se trouve dans le fichier traduction.cpp\n");
 		}
@@ -22,10 +22,13 @@ int myRename(int paramargc, char** const paramargv)
 				{
 					case 'n' :
 					{
-						name = (char*)malloc(sizeof(char)*strlen(optarg)+1);
+						name = (char*)malloc(sizeof(char)*(strlen(optarg)+1));
 						strcpy(name, optarg);
 						if (strstr(name, ".cpp") == NULL)
+						{
+							name = (char*)malloc(sizeof(char)*(strlen(name)+5));
 							strcat(name, ".cpp\0");
+						}
 						rename("traduction.cpp", name);	
 						printf ("La traduction du code source se trouve dans le fichier %s  \n", name);
 					break;
