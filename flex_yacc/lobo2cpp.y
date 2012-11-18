@@ -10,7 +10,7 @@ int yylex(void);
 int yytext(void);
 extern int yyin;
 extern int yylineno;
-extern char* name;
+
 
 struct token
 {
@@ -206,14 +206,17 @@ int main(int argc, char **argv)
 			
 		yyin=(int)fichier;	
 		yyparse();
-		myRename(argc, argv);
+		char *name = myRename(argc, argv);
 		fclose(fichier);
 
 		char *strTemp;
-		strTemp = (char*)malloc(sizeof(char)*(strlen(name)+strlen("indent ")+1));
-		strcpy(strTemp,"indent ");
+		strTemp = (char*)malloc(sizeof(char)*(strlen(name)+strlen("indent -linux ")+1));
+		strcpy(strTemp,"indent -linux ");
 		strcat(strTemp, name);
 		system(strTemp);
+		free(strTemp);
+		name = NULL;
+		strTemp = NULL;
 	}
 
 return 0;
