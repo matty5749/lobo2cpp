@@ -1,6 +1,7 @@
 %{
 #include "stdio.h"
 #include "tableSymbole.h"
+#include "myRename.h"
 
 int erreur=0;
 int repete=0;
@@ -9,6 +10,7 @@ int yylex(void);
 int yytext(void);
 extern int yyin;
 extern int yylineno;
+
 
 struct token
 {
@@ -38,7 +40,7 @@ program :
 		}
 		else
 		{
-			printf("\nLe code source lobo est syntaxiquement correct!\nLa traduction du code source se trouve dans le fichier traduction.cpp\n");
+			printf("\nLe code source lobo est syntaxiquement correct!\n");
 			FILE* fichier=fopen("traduction.cpp","w");
 			if (fichier)
 			{
@@ -48,6 +50,7 @@ program :
 				fprintf(fichier,"%s",$2.cpp);
 				fprintf(fichier,"return 0;\n}");
 			}
+			fclose(fichier);
 		}
 	}
 	;
@@ -195,15 +198,26 @@ parametre:
 
 int main(int argc, char **argv) 
 {
-	if(argc == 2) 
+	if(argc >= 2)
 	{
 		FILE* fichier;
 		if(!(fichier=fopen(argv[1], "r"))) return 1;
-		
-		yyin=(int)fichier;
+			
+		yyin=(int)fichier;	
 		yyparse();
+		char *name = myRename(argc, argv);
 		fclose(fichier);
+
+		char *strTemp;
+		strTemp = (char*)malloc(sizeof(char)*(strlen(name)+strlen("indent -linux ")+1));
+		strcpy(strTemp,"indent -linux ");
+		strcat(strTemp, name);
+		system(strTemp);
+		free(strTemp);
+		name = NULL;
+		strTemp = NULL;
 	}
+
 return 0;
 }
 
