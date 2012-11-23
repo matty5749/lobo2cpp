@@ -5,6 +5,7 @@
 
 Symbole* tableSymbole;
 
+//Insere un symbole dans la table, on retient le nom et la ligne à laquelle a été trouvé le symbole
 Symbole* insererSymbole (char* identifiant,int ligne)
 {
 	Symbole* ptr=(Symbole*)getSymbole(identifiant);
@@ -24,6 +25,7 @@ Symbole* insererSymbole (char* identifiant,int ligne)
 }
 
 
+//Recupere un symbole dans la table des symboles si il existe dans celle-ci, 0 sinon
 Symbole* getSymbole (char* identifiant)
 {
 	Symbole* ptr;
@@ -34,6 +36,7 @@ Symbole* getSymbole (char* identifiant)
 }
 
 
+//Parcours de la table des symboles afin de detecter d'eventuelles erreurs ou oublis
 int lectureTableDeSymbole()
 {
 	Symbole* ptr;
